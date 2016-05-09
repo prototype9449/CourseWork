@@ -7,33 +7,27 @@ const portForReceiving = 3333
 const portForSending = 3334
 const host = "127.0.0.1"
 const sizeOfMessage = 32768
-const iterations = 512
+const iterations = 256 * 16
 const message = new Buffer("1".repeat(sizeOfMessage))
-let time
-let i = 0
-let isNotRaised = true
-let total = 0
+let time,
+    i = 0,
+    totalLength = 0
 
 client.on("message", (msg) => {
-    total += message.length
-    i <= iterations && client.send(message, 0, message.length, portForSending, host)
-    i++
-    if(i > iterations && isNotRaised) {
-        const resultMessage = new Buffer('end')
-        client.send(resultMessage, 0, resultMessage.length, portForSending, host)
-        isNotRaised = false
-    }
-    if(msg.toString().indexOf('end') !== -1){
-        client.close()
-    }
+   totalLength += msg.length
+   i++
+   client.send(message, 0, message.length, portForSending, host)
+   if (i > iterations) {
+      return client.close()
+   }
 });
 
 client.on('close', () => {
-    var diff = process.hrtime(time);
-    console.log(`total: ${total}`);
-    console.log('work time - %d ms', (diff[0] * 1e9 + diff[1])/1000000);
-    console.log('Connection was closed for client');
-    process.exit()
+   var diff = process.hrtime(time);
+   console.log(`total: ${totalLength}`);
+   console.log('work time - %d ms', (diff[0] * 1e9 + diff[1]) / 1000000);
+   console.log('Connection was closed for client');
+   process.exit()
 });
 
 client.bind(portForReceiving, host)
