@@ -1,31 +1,42 @@
 'use strict'
 const net = require('net');
-let lengthContent = 0
+
+const options = {
+    maxContentLength: 32768 * 2048 + 5
+}
+const client = new net.Socket();
+let contentLength = 0
 
 const server = net.createServer((client) => {
-    console.log('client connected');
+    console.log('client connected')
+
     client.on('close', () => {
-        lengthContent = 0
-        console.log('Connection was closed');
-    });
-    client.on('readable', function () {
-        let chunk
-        let received = ''
-        while (null !== (chunk = client.read())) {
-            received += chunk
-        }
-        lengthContent += received.length
-        received !== '' && client.write(received)
-        if (received.indexOf('end') !== -1) {
-            console.log(`total: ${lengthContent}`)
-            client.end()
-        }
+        console.log(`total server: ${contentLength}`)
+        console.log('Connection was closed')
+        contentLength = 0
     })
-});
+
+    client.on('readable', function () {
+        let chunk,
+            buffer = null
+
+        while (null !== (chunk = client.read())) {
+            buffer = buffer === null
+                ? Uint8Array.from(chunk)
+                : Uint8Array.concat(buffer, chunk)
+        }
+        buffer !== null && (contentLength += buffer.length)
+        if (contentLength < options.maxContentLength) {
+            return client.write(new Buffer(buffer))
+        }
+
+        buffer !== null && client.end(new Buffer(buffer))
+    })
+})
 
 server.on('error', (err) => {
+    server.close()
     throw err;
-});
-server.listen(1337, () => {
-    console.log('"Waiting for a connection...');
-});
+})
+
+server.listen(1337, () =>  console.log('"Waiting for a connection...'))

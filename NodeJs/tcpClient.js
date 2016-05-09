@@ -1,38 +1,36 @@
 'use strict'
 const net = require('net');
-const sizeOfMessage = 65536*8
-const iterations = 128
-const message = "1".repeat(sizeOfMessage)
 
-let received = 0
 const client = new net.Socket();
+const options = {
+    sizeOfMessage: 32768,
+    iterations: 2048
+}
+const message = Buffer.alloc(options.sizeOfMessage, '1', 'utf-8');
 
-let chunkNumber = 0
-let time
-let isNotRaised = true
+let contentLength = 0,
+    iterationNumber = 0,
+    time
 
 client.on('readable', () => {
     let chunk;
     while (null !== (chunk = client.read())) {
-        received += chunk.length
+        contentLength += chunk.length
     }
-    chunkNumber++
-    chunkNumber <= iterations && client.write(message)
-    if(chunkNumber > iterations && isNotRaised) {
-        client.write('end')
-        isNotRaised = false
-    }
+    iterationNumber++
+
+    iterationNumber <= options.iterations && client.write(message)
 })
 
 client.on('end', () => {
-    let diff = process.hrtime(time);
-    console.log(`total: ${received}`);
-    console.log('work time - %d ms', (diff[0] * 1e9 + diff[1])/1000000);
-    console.log('Connection was closed');
+    let [begin,end] = process.hrtime(time)
+    console.log(`total client: ${contentLength}`)
+    console.log(`work time - ${(begin * 1e9 + end) / 1000000} ms`)
+    console.log('Connection was closed')
 })
 
 client.connect(1337, '127.0.0.1', () => {
     console.log('client connected');
     time = process.hrtime()
-    client.write(message)
+    client.write('hello')
 })
