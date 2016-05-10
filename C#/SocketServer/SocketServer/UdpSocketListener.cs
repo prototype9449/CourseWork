@@ -10,11 +10,13 @@ namespace SocketServer
     public class UdpSocketListener
     {
         private readonly ManualResetEvent _threadManager = new ManualResetEvent(false);
-        private EndPoint _endPoint;
+        private EndPoint _receiveEndPoint;
+        private EndPoint _sendEndPoint;
 
-        public UdpSocketListener(int port, IPAddress ipAdress)
+        public UdpSocketListener(int portForSending, int portForReceiving, IPAddress ipAdress)
         {
-            _endPoint = new IPEndPoint(ipAdress, port);
+            _sendEndPoint = new IPEndPoint(ipAdress, portForSending);
+            _receiveEndPoint = new IPEndPoint(ipAdress, portForReceiving);
         }
 
         public void StartListening()
@@ -27,7 +29,7 @@ namespace SocketServer
 
             try
             {
-                socket.Bind(_endPoint);
+                socket.Bind(_receiveEndPoint);
 
                 while (true)
                 {
@@ -35,7 +37,7 @@ namespace SocketServer
                     Console.WriteLine("Waiting for a connection...");
                     var stateObject = new StateObject { WorkSocket = socket };
                     socket.BeginReceiveFrom(stateObject.Buffer, 0, StateObject.BufferSize, SocketFlags.None,
-                        ref _endPoint, ReceiveCallback, stateObject);
+                        ref _receiveEndPoint, ReceiveCallback, stateObject);
                     _threadManager.WaitOne();
                 }
 
@@ -55,11 +57,11 @@ namespace SocketServer
 
             var socket = stateObject.WorkSocket;
 
-            int bytesRead = socket.EndReceiveFrom(ar, ref _endPoint);
+            int bytesRead = socket.EndReceiveFrom(ar, ref _receiveEndPoint);
             if (bytesRead > 0)
             {
                 stateObject.ByteReceived += bytesRead;
-                socket.BeginSend(stateObject.Buffer.ToArray(), 0, bytesRead, 0, SendCallback, stateObject);
+                socket.BeginSendTo(stateObject.Buffer.ToArray(), 0, bytesRead, 0, _sendEndPoint, SendCallback, stateObject);
             }
         }
 
@@ -71,7 +73,7 @@ namespace SocketServer
                 var sentBytes = stateObject.WorkSocket.EndSendTo(ar);
                 stateObject.ByteSent += sentBytes;
 
-                if (Encoding.UTF8.GetString(stateObject.Buffer).Contains("end"))
+                if (stateObject.ByteSent == StateObject.MaxContentlength)
                 {
                     Console.WriteLine("Connection was closed");
                     if (stateObject.ByteReceived != stateObject.ByteSent)
@@ -84,7 +86,7 @@ namespace SocketServer
                 }
                 else
                 {
-                    stateObject.WorkSocket.BeginReceiveFrom(stateObject.Buffer, 0, StateObject.BufferSize, 0, ref _endPoint,
+                    stateObject.WorkSocket.BeginReceiveFrom(stateObject.Buffer, 0, StateObject.BufferSize, 0, ref _receiveEndPoint,
                         ReceiveCallback, stateObject);
                 }
 

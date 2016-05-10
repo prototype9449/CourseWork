@@ -4,7 +4,9 @@ const net = require('net');
 const client = new net.Socket();
 const options = {
     sizeOfMessage: 32768,
-    iterations: 2048
+    iterations: 2048,
+    port: 1337,
+    host: '127.0.0.1'
 }
 const message = Buffer.alloc(options.sizeOfMessage, '1', 'utf-8');
 
@@ -29,7 +31,7 @@ client.on('end', () => {
     console.log('Connection was closed')
 })
 
-client.connect(1337, '127.0.0.1', () => {
+client.connect(options.port, options.host, () => {
     console.log('client connected');
     time = process.hrtime()
     client.write('hello')

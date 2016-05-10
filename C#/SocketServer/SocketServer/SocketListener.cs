@@ -84,7 +84,7 @@ namespace SocketServer
                 var sentBytes = stateObject.WorkSocket.EndSend(ar);
                 stateObject.ByteSent += sentBytes;
 
-                if (Encoding.UTF8.GetString(stateObject.Buffer).Contains("end"))
+                if (stateObject.ByteSent == StateObject.MaxContentlength)
                 {
                     Console.WriteLine("Connection was closed");
                     if (stateObject.ByteReceived != stateObject.ByteSent)
