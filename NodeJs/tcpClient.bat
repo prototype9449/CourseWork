@@ -1,4 +1,4 @@
 cd /d "E:\
-cd "E:\RemotedProjects\course-work-2016\nodeJs"
+cd "E:\RemotedProjects\CourseWork\nodeJs"
 node tcpClient.js
 pause
