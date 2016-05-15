@@ -99,12 +99,11 @@ namespace httpServer
     {
         public static void Main(string[] args)
         {
-            int port = int.Parse(args[0]);
+            string address = args[0];
             int maxFileNumber = int.Parse(args[1]);
             bool isLoadingIncluded = bool.Parse(args[2]);
             string directory = args[3];
 
-            var address = string.Format("http://127.0.0.1:{0}/", port);
             var program = new Server(address, directory, maxFileNumber, isLoadingIncluded);
             program.Start().Wait();
         }

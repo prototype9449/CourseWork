@@ -58,10 +58,8 @@ namespace httpClient
     {
         public static void Main(string[] args)
         {
-            var port = args[0];
+            var address = args[0];
             int fileNumber = int.Parse(args[1]);
-            var address = string.Format("http://127.0.0.1:{0}/", port);
-
             var client = new Client(address, fileNumber);
             client.Start();
             Console.ReadLine();
