@@ -32,12 +32,12 @@ namespace httpClient
             {
                 tasks[i] = Perform(i);
             }
-            Task.WaitAll(tasks);
+            Task.WaitAll(tasks, -1);
             timer.Stop();
 
-            _result.ToList().ForEach(Console.WriteLine);
+            //_result.ToList().ForEach(Console.WriteLine);
             Console.WriteLine();
-            Console.WriteLine("total: {0}",timer.ElapsedMilliseconds);
+            Console.WriteLine("tasks: {0} time: {1}", _tasks, timer.ElapsedMilliseconds);
         }
 
         private async Task Perform(int state)
@@ -58,10 +58,14 @@ namespace httpClient
     {
         public static void Main(string[] args)
         {
-            var address = args[0];
-            int fileNumber = int.Parse(args[1]);
-            var client = new Client(address, fileNumber);
-            client.Start();
+            var address = "http://localhost:8077/Home/Index/";
+
+            for (var i = 100; i <= 500; i+=100)
+            {
+                var client = new Client(address, i);
+                client.Start();
+            }
+            
             Console.ReadLine();
         }
     }

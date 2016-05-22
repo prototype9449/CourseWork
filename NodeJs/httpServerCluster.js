@@ -3,10 +3,9 @@
 const http = require('http')
 const fs = require('fs')
 const cluster = require('cluster')
-const os = require('os')
 
-const processorNumber = os.cpus().length
-let [port, fileNumber, isLoadingIncluded, isClusterIncluded, directory] = process.argv.slice(2)
+const processorNumber = 6
+let [port, fileNumber, directory] = [9669, 800, "E:\\RemotedProjects\\CourseWork\\data"]
 
 const quickSort = (array, left, right) => {
     let temp;
@@ -48,38 +47,33 @@ const createServer = () => {
                 response.end()
             }
             else {
-                if (isLoadingIncluded === 'true') {
-                    const array = data.toString().split("\r\n")
-                    const time = process.hrtime()
-                    quickSort(array, 0, array.length - 1)
-                    const [begin,end] = process.hrtime(time)
-                    const interval = (begin * 1e9 + end) / 1000000
+                const array = data.toString().split("\r\n")
+                const time = process.hrtime()
+                quickSort(array, 0, array.length - 1)
+                const [begin,end] = process.hrtime(time)
+                const interval = (begin * 1e9 + end) / 1000000
 
-                    response.writeHead(200, {'Content-Type': 'text/plain'})
-                    response.end(`file: ${fileName}, length: ${array.length}, time: ${interval}`)
-                } else {
-                    response.writeHead(200, {'Content-Type': 'text/plain'})
-                    response.end(`file: ${fileName}; without loading`)
-                }
+                response.writeHead(200, {'Content-Type': 'text/plain'})
+                response.end(`file: ${fileName}, length: ${array.length}, time: ${interval}`)
+
             }
         })
     }).listen(port, '127.0.0.1')
     console.log(`Server running at http://127.0.0.1:${port}/`)
 }
 
-if (isClusterIncluded === 'true') {
-    if (cluster.isMaster) {
-        for (let i = 0; i < processorNumber; i++) {
-            cluster.fork()
-        }
 
-        cluster.on('exit', (worker, code, signal) => {
-            console.log('worker ' + worker.process.pid + ' died')
-        })
-    }
-    else {
-        createServer()
-    }
-} else{
-    createServer()
-}
+// if (cluster.isMaster) {
+//     for (let i = 0; i < processorNumber; i++) {
+//         cluster.fork()
+//     }
+
+//     cluster.on('exit', (worker, code, signal) => {
+//         console.log('worker ' + worker.process.pid + ' died')
+//     })
+// }
+// else {
+createServer()
+//}
+
+    

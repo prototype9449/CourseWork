@@ -53,11 +53,37 @@ namespace MvcApplication1.Controllers
                 var array = rawData.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                 var timer = new Stopwatch();
                 timer.Start();
-                Array.Sort(array);
+                QuickSort(array, 0, array.Length -1);
                 timer.Stop();
 
                 return new Tuple<string[], long>(array, timer.ElapsedMilliseconds);
             });
+        }
+
+        static void QuickSort(string[] array, int left, int right)
+        {
+            string temp;
+            string x = array[left + (right - left) / 2];
+            int i = left;
+            int j = right;
+            while (i <= j)
+            {
+                while (array[i].CompareTo(x) == -1) i++;
+                while (array[j].CompareTo(x) == 1) j--;
+                if (i <= j)
+                {
+                    temp = array[i];
+                    array[i] = array[j];
+                    array[j] = temp;
+                    i++;
+                    j--;
+                }
+            }
+            if (i < right)
+                QuickSort(array, i, right);
+
+            if (left < j)
+                QuickSort(array, left, j);
         }
     }
 }
