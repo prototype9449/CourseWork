@@ -3,8 +3,8 @@ const net = require('net');
 
 const client = new net.Socket();
 const options = {
-    sizeOfMessage: 32768,
-    iterations: 2048,
+    sizeOfMessage: 16384,
+    iterations: 8192,
     port: 1337,
     host: '127.0.0.1'
 }

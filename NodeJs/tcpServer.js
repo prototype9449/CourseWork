@@ -2,7 +2,7 @@
 const net = require('net');
 
 const options = {
-    maxContentLength: 32768 * 2048 + 5
+    maxContentLength: 16384 * 8192 + 5
 }
 const client = new net.Socket();
 let contentLength = 0
@@ -17,20 +17,15 @@ const server = net.createServer((client) => {
     })
 
     client.on('readable', function () {
-        let chunk,
-            buffer = null
+        const buffer = client.read()
+        if (buffer !== null)
+            contentLength += buffer.length
 
-        while (null !== (chunk = client.read())) {
-            buffer = buffer === null
-                ? Uint8Array.from(chunk)
-                : Uint8Array.concat(buffer, chunk)
-        }
-        buffer !== null && (contentLength += buffer.length)
         if (contentLength < options.maxContentLength) {
-            return client.write(new Buffer(buffer))
+            return client.write(buffer)
         }
 
-        buffer !== null && client.end(new Buffer(buffer))
+        buffer !== null && client.end(buffer)
     })
 })
 
