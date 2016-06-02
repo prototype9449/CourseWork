@@ -7,20 +7,25 @@ using System.Threading;
 
 namespace SocketServer
 {
-    public class SocketListener
+    public class TcpSocketListener
     {
         private readonly ManualResetEvent _threadManager = new ManualResetEvent(false);
         private int _port;
         private IPAddress _ipAdress;
+        private readonly ContextInfo _contextInfo;
 
-        public SocketListener(int port, IPAddress ipAdress)
+        public TcpSocketListener(int port, IPAddress ipAdress, ContextInfo contextInfo)
         {
             _port = port;
             _ipAdress = ipAdress;
+            _contextInfo = contextInfo;
         }
 
         public void StartListening()
         {
+            Console.WriteLine("tcp-сервер запущен");
+            Console.WriteLine("ожидание подключения клиентов...");
+
             var ipEndPoint = new IPEndPoint(_ipAdress, _port);
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
@@ -37,7 +42,7 @@ namespace SocketServer
                 {
                     _threadManager.Reset();
 
-                    Console.WriteLine("Waiting for a connection...");
+                    
                     socket.BeginAccept(AcceptCallback, socket);
                     _threadManager.WaitOne();
                 }
@@ -56,7 +61,7 @@ namespace SocketServer
         {
             _threadManager.Set();
             var socket = ((Socket)ar.AsyncState).EndAccept(ar);
-            Console.WriteLine("Client connected");
+            Console.WriteLine("Соединение с клиентом установленно");
 
             var stateObject = new StateObject { WorkSocket = socket };
             socket.BeginReceive(stateObject.Buffer, 0, StateObject.BufferSize, SocketFlags.None, ReceiveCallback, stateObject);
@@ -84,14 +89,14 @@ namespace SocketServer
                 var sentBytes = stateObject.WorkSocket.EndSend(ar);
                 stateObject.ByteSent += sentBytes;
 
-                if (stateObject.ByteSent == StateObject.MaxContentlength)
+                if (stateObject.ByteSent == _contextInfo.MaxContentlength)
                 {
-                    Console.WriteLine("Connection was closed");
+                    Console.WriteLine("соединение было закрыто");
                     if (stateObject.ByteReceived != stateObject.ByteSent)
                     {
                         throw new Exception();
                     }
-                    Console.WriteLine("total : {0}",stateObject.ByteReceived);
+                    Console.WriteLine("общее количество байт : {0}",stateObject.ByteReceived);
                     stateObject.WorkSocket.Shutdown(SocketShutdown.Both);
                     stateObject.WorkSocket.Close();
                 }

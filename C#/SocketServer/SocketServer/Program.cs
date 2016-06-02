@@ -6,8 +6,15 @@ namespace SocketServer
     {
         public static int Main()
         {
-            new SocketListener(1337, IPAddress.Parse("127.0.0.1")).StartListening();
-            //new UdpSocketListener(3333, 3334, IPAddress.Parse("127.0.0.1")).StartListening();
+            var contextInfo = new ContextInfo
+            {
+                GreetingMessagelength = 5,
+                Iterations = 1024,
+                SizeOfMessage = 16384
+            };
+
+            //new TcpSocketListener(1337, IPAddress.Parse("127.0.0.1"), contextInfo).StartListening();
+            new UdpSocketListener(3333, 3334, IPAddress.Parse("127.0.0.1"), contextInfo).StartListening();
             return 0;
         }
     }

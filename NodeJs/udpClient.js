@@ -6,8 +6,8 @@ const client = dgram.createSocket("udp4")
 const options = {
     portForReceiving: 3333,
     portForSending: 3334,
-    iterations: 2048,
-    sizeOfMessage: 32768,
+    iterations: 1024,
+    sizeOfMessage: 16384,
     host: "127.0.0.1"
 }
 const message = Buffer.alloc(options.sizeOfMessage, '1', 'utf-8')
@@ -25,11 +25,18 @@ client.on("message", (msg) => {
 
 client.on('close', () => {
     var [begin, start] = process.hrtime(time)
-    console.log(`total: ${totalLength}`)
-    console.log(`work time - ${(begin * 1e9 + start) / 1000000} ms`)
-    console.log('Connection was closed for client')
+    console.log(`общее количество байт: ${totalLength}`)
+    console.log(`время ответа - ${(begin * 1e9 + start) / 1000000} ms`)
+    console.log('соединение было закрыто')
     process.exit()
 })
+
+console.log(`размер сообщения - ${options.sizeOfMessage}`)
+console.log(`количество запросов - ${options.iterations}`)
+console.log(`порт для отправки сообщений - ${options.portForSending}`)
+console.log(`порт для получения сообщений - ${options.portForReceiving}`)
+console.log()
+console.log('udp-клиент: отправка сообщений серверу')
 
 client.bind(options.portForReceiving, options.host)
 time = process.hrtime()

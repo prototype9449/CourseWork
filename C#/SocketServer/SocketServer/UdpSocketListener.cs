@@ -9,18 +9,23 @@ namespace SocketServer
 {
     public class UdpSocketListener
     {
+        private readonly ContextInfo _contextInfo;
         private readonly ManualResetEvent _threadManager = new ManualResetEvent(false);
         private EndPoint _receiveEndPoint;
         private EndPoint _sendEndPoint;
 
-        public UdpSocketListener(int portForSending, int portForReceiving, IPAddress ipAdress)
+        public UdpSocketListener(int portForSending, int portForReceiving, IPAddress ipAdress, ContextInfo contextInfo)
         {
+            _contextInfo = contextInfo;
             _sendEndPoint = new IPEndPoint(ipAdress, portForSending);
             _receiveEndPoint = new IPEndPoint(ipAdress, portForReceiving);
         }
 
         public void StartListening()
         {
+            Console.WriteLine("udp-сервер запущен");
+            Console.WriteLine("ожидание подключения клиентов...");
+
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
             {
                 ReceiveBufferSize = StateObject.BufferSize,
@@ -34,7 +39,7 @@ namespace SocketServer
                 while (true)
                 {
                     _threadManager.Reset();
-                    Console.WriteLine("Waiting for a connection...");
+                    Console.WriteLine("cоединение с клиентом установленно");
                     var stateObject = new StateObject { WorkSocket = socket };
                     socket.BeginReceiveFrom(stateObject.Buffer, 0, StateObject.BufferSize, SocketFlags.None,
                         ref _receiveEndPoint, ReceiveCallback, stateObject);
@@ -73,14 +78,14 @@ namespace SocketServer
                 var sentBytes = stateObject.WorkSocket.EndSendTo(ar);
                 stateObject.ByteSent += sentBytes;
 
-                if (stateObject.ByteSent == StateObject.MaxContentlength)
+                if (stateObject.ByteSent == _contextInfo.MaxContentlength)
                 {
-                    Console.WriteLine("Connection was closed");
+                    Console.WriteLine("соединение было закрыто");
                     if (stateObject.ByteReceived != stateObject.ByteSent)
                     {
                         throw new Exception();
                     }
-                    Console.WriteLine("total : {0}", stateObject.ByteReceived);
+                    Console.WriteLine("общее количество байт : {0}", stateObject.ByteReceived);
                     stateObject.WorkSocket.Shutdown(SocketShutdown.Both);
                     stateObject.WorkSocket.Close();
                 }

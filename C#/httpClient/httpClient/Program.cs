@@ -22,9 +22,6 @@ namespace httpClient
 
         public void Start()
         {
-            Console.WriteLine();
-            Console.WriteLine("Start sending");
-
             var timer = new Stopwatch();
             timer.Start();
             var tasks = new Task[_tasks];
@@ -32,12 +29,17 @@ namespace httpClient
             {
                 tasks[i] = Perform(i);
             }
-            Task.WaitAll(tasks, -1);
+            try
+            {
+                Task.WaitAll(tasks, -1);
+            }
+            catch (AggregateException exception)
+            {
+                throw exception;
+            }
             timer.Stop();
-
-            //_result.ToList().ForEach(Console.WriteLine);
-            Console.WriteLine();
-            Console.WriteLine("tasks: {0} time: {1}", _tasks, timer.ElapsedMilliseconds);
+            
+            Console.WriteLine("файлов обработано: {0}, время работы: {1} ms", _tasks, timer.ElapsedMilliseconds);
         }
 
         private async Task Perform(int state)
@@ -45,10 +47,23 @@ namespace httpClient
             string url = String.Format("{0}{1}", _baseUrl, state.ToString().PadLeft(3, '0'));
             var client = new HttpClient();
             var timer = new Stopwatch();
+            var shouldRecconect = true;
 
-            timer.Start();
-            var stringResult = await client.GetStringAsync(url);
-            timer.Stop();
+            string stringResult = "";
+            while (shouldRecconect)
+            {
+                try
+                {
+                    timer.Start();
+                    stringResult = await client.GetStringAsync(url);
+                    timer.Stop();
+                    shouldRecconect = false;
+                }
+                catch (Exception ex)
+                {
+                    shouldRecconect = true;
+                }
+            }
 
             _result.Enqueue(string.Format("{0,4}\t{1,5}\t{2}", url, timer.ElapsedMilliseconds, stringResult));
         }
@@ -58,12 +73,16 @@ namespace httpClient
     {
         public static void Main(string[] args)
         {
-            var address = "http://localhost:8077/Home/Index/";
+            var address = args[0];
+            Console.WriteLine("Адрес для отправки сообщений: {0}", address);
+            Console.WriteLine();
 
             for (var i = 100; i <= 500; i+=100)
             {
+                Console.WriteLine("Количество сообщений: {0}", i);
                 var client = new Client(address, i);
                 client.Start();
+                Console.WriteLine();
             }
             
             Console.ReadLine();

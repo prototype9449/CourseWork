@@ -2,21 +2,25 @@
 const net = require('net');
 
 const options = {
-    maxContentLength: 16384 * 8192 + 5
+    port: 1337,
+    greetingLengthMessage: 5,
+    iterations: 1024,
+    sizeOfMessage: 16384
 }
-const client = new net.Socket();
+options.maxContentLength = options.sizeOfMessage * options.iterations + options.greetingLengthMessage
 let contentLength = 0
 
 const server = net.createServer((client) => {
-    console.log('client connected')
+    console.log('соединение с клиентом было установленно')
 
     client.on('close', () => {
-        console.log(`total server: ${contentLength}`)
-        console.log('Connection was closed')
+        console.log(`общее количество байт: ${contentLength}`)
+        console.log('соединение было закрыто')
+        console.log()
         contentLength = 0
     })
 
-    client.on('readable', function () {
+    client.on('readable', () => {
         const buffer = client.read()
         if (buffer !== null)
             contentLength += buffer.length
@@ -34,4 +38,10 @@ server.on('error', (err) => {
     throw err;
 })
 
-server.listen(1337, () =>  console.log('"Waiting for a connection...'))
+server.listen(options.port, () => {
+    console.log(`порт - ${options.port}`)
+    console.log(`размер сообщения - ${options.sizeOfMessage}`)
+    console.log(`количество запросов - ${options.iterations}`)
+    console.log()
+    console.log('tcp-сервер: ожидание соединения с клиентом...')
+})

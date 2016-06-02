@@ -64,7 +64,9 @@ const createServer = () => {
             }
         })
     }).listen(port, '127.0.0.1')
-    console.log(`Server running at http://127.0.0.1:${port}/`)
+    console.log(`Сервер запущен по адресу http://127.0.0.1:${port}/`)
+    console.log(`Кластер включён - ${isClusterIncluded === 'true' ? 'Да' : 'Нет'}`)
+    console.log()
 }
 
 if (isClusterIncluded === 'true') {

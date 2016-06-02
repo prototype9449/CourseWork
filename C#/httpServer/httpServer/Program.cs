@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace httpServer
@@ -129,8 +130,10 @@ namespace httpServer
             int maxFileNumber = int.Parse(args[1]);
             bool isLoadingIncluded = bool.Parse(args[2]);
             string directory = args[3];
-
+            Console.WriteLine("http-сервер запущен по адресу {0}", address);
+            Console.WriteLine("Сервер ожидает подключений...");
             var program = new Server(address, directory, maxFileNumber, isLoadingIncluded);
+            
             program.Start().Wait();
         }
     }
