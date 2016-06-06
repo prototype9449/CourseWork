@@ -39,7 +39,6 @@ namespace SocketServer
                 while (true)
                 {
                     _threadManager.Reset();
-                    Console.WriteLine("cоединение с клиентом установленно");
                     var stateObject = new StateObject { WorkSocket = socket };
                     socket.BeginReceiveFrom(stateObject.Buffer, 0, StateObject.BufferSize, SocketFlags.None,
                         ref _receiveEndPoint, ReceiveCallback, stateObject);

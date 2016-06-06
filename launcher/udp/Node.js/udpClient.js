@@ -1,13 +1,13 @@
-'use strict'
+﻿'use strict'
 
 const dgram = require("dgram")
 const client = dgram.createSocket("udp4")
-
+const [portForReceiving, portForSending, sizeOfMessage, iterations] = process.argv.slice(2)
 const options = {
-    portForReceiving: 3333,
-    portForSending: 3334,
-    iterations: 1024,
-    sizeOfMessage: 16384,
+    portForReceiving: +portForReceiving,
+    portForSending: +portForSending,
+    iterations: +iterations,
+    sizeOfMessage: +sizeOfMessage,
     host: "127.0.0.1"
 }
 const message = Buffer.alloc(options.sizeOfMessage, '1', 'utf-8')

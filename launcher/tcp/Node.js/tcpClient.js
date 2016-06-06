@@ -1,11 +1,14 @@
-"use strict"
+﻿"use strict"
 
 const net = require('net');
 const client = new net.Socket();
+
+const [port, sizeOfMessage, iterations] = process.argv.slice(2)
+
 const options = {
-    sizeOfMessage: 16384,
-    iterations: 1024,
-    port: 1337,
+    sizeOfMessage: +sizeOfMessage,
+    iterations: +iterations,
+    port: +port,
     host: '127.0.0.1'
 }
 const state = {

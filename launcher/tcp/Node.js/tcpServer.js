@@ -1,11 +1,12 @@
-'use strict'
+﻿'use strict'
 const net = require('net');
 
+const [port, sizeOfMessage, iterations] = process.argv.slice(2)
 const options = {
-    port: 1337,
+    port: +port,
     greetingLengthMessage: 5,
-    iterations: 1024,
-    sizeOfMessage: 16384
+    iterations: +iterations,
+    sizeOfMessage: +sizeOfMessage
 }
 options.maxContentLength = options.sizeOfMessage * options.iterations + options.greetingLengthMessage
 let contentLength = 0

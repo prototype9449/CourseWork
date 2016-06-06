@@ -1,11 +1,12 @@
-'use strict'
+﻿'use strict'
 const dgram = require('dgram')
 const server = dgram.createSocket('udp4')
 
+const [portForReceiving, iterations] = process.argv.slice(2)
 const options = {
-    portForReceiving: 3334,
+    portForReceiving: +portForReceiving,
     host: "127.0.0.1",
-    iterations: 1024
+    iterations: +iterations
 }
 const sendMessage = (message, info) => server.send(message, 0, message.length, info.port, info.address)
 let lengthContent = 0,
